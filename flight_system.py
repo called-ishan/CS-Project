@@ -9,9 +9,21 @@ try:
         print("Connection with MySQL is Successfull")
         cur=mycon.cursor()
         cur.execute("CREATE DATABASE IF NOT EXISTS flight_booking_system")
-        cur.execute("USE DATABAST flight_booking_system")
-        cur.execute("CREATE TABLE FLIGHTS()")
-except Error as e:
+        cur.execute("USE flight_booking_system")
+        cur.execute("""CREATE TABLE IF NOT EXISTS FLIGHTS(
+            F_NAME VARCHAR(30),
+            F_ID INTEGER,
+            DEP_LOCN VARCHAR(30),
+            DEST_LOCN VARCHAR(30),
+            TVL_DATE DATE, DEP_TIME TIME,
+            ARVL_TIME TIME,
+            ECO_CAP INTEGER,
+            BNSS_CAP INTEGER,
+            FCLASS_CAP INTEGER,
+            ECO_PRICE INTEGER,
+            BNSS_PRICE INTEGER,
+            FCLASS_PRICE INTEGER)""")
+except Error as e: 
     print("Error while connecting to MySQL, Error: ", e)  
 # else:
     # print("Connection with MySQL Failed")
@@ -42,7 +54,7 @@ def bookflight():
     
     
     dot = input("Enter Date of Travel(YYYY-MM-DD): ")
-    seatclass = input("Select Seat Class || First Class | Business | Premium Economy | Economy || : ")
+    seatclass = input("Select Seat Class || First Class | Business | Economy || : ")
     # Feeding all data to database    
 
     # ---- Personal Details ----
