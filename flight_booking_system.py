@@ -161,7 +161,7 @@ def bookflight():
     print(f"Booking ID: {booking_id}")
     print(f"Total Price: {total_price}")
 
-## Change names of plane to model number so that default seats capacity can be restored.
+## NOTE FOR ME: Change names of plane to model number so that default seats capacity can be restored.
 
 
 
