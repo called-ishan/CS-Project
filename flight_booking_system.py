@@ -58,18 +58,6 @@ try:
 except Error as e:
     print("Error: ", e)
 
-# ---- Menu ----
-opt = 314159265359
-while opt != 0:
-    # Basic structure:
-    print("""1: Book a Flight
-    2: Update Booking
-    3: View Booking
-    4: Cancel Booking
-    5: View Available Flights
-    0: Exit""")
-    opt = int(input("Choose an option: "))
-
 # ---- Functions ----
 # Book a flight
 def bookflight():
@@ -173,6 +161,43 @@ def bookflight():
     print(f"Booking ID: {booking_id}")
     print(f"Total Price: {total_price}")
 
-# Calling the function
-bookflight()
 ## Change names of plane to model number so that default seats capacity can be restored.
+
+
+
+
+
+
+
+
+# ---- Menu ----
+opt = 314159265359
+while opt != 0:
+    # Basic structure:
+    print("""
+    ---- Flight Booking System ----
+    ===============================
+    1: Book a Flight
+    2: Update Booking
+    3: View Booking
+    4: Cancel Booking
+    5: View Available Flights
+    0: Exit
+    ===============================
+    """)
+    opt = int(input("Choose an option: "))
+    print("--------------------------")
+    if opt == 1:
+        bookflight()  # Call the function to book a flight
+    elif opt == 2:
+        update_booking()  # Call the function to update booking
+    elif opt == 3:
+        view_booking()  # Call the function to view booking
+    elif opt == 4:
+        cancel_booking()  # Call the function to cancel booking
+    elif opt == 5:
+        view_available_flights()  # Call the function to view available flights
+    elif opt == 0:
+        print("Exiting...")  # Exit message
+    else:
+        print("Invalid option, please try again.")
