@@ -8,26 +8,35 @@ try:
     if mycon.is_connected():
         print("Connection with MySQL is Successfull")
         cur=mycon.cursor()
-        cur.execute("CREATE DATABASE IF NOT EXISTS flight_booking_system")
-        cur.execute("USE flight_booking_system")
-        cur.execute("""CREATE TABLE IF NOT EXISTS FLIGHTS(
-            F_NAME VARCHAR(30),
-            F_ID INTEGER,
-            DEP_LOCN VARCHAR(30),
-            DEST_LOCN VARCHAR(30),
-            TVL_DATE DATE, DEP_TIME TIME,
-            ARVL_TIME TIME,
-            ECO_CAP INTEGER,
-            BNSS_CAP INTEGER,
-            FCLASS_CAP INTEGER,
-            ECO_PRICE INTEGER,
-            BNSS_PRICE INTEGER,
-            FCLASS_PRICE INTEGER)""")
 except Error as e: 
     print("Error while connecting to MySQL, Error: ", e)  
-# else:
-    # print("Connection with MySQL Failed")
 
+# ---- MySQL Initial Commands ----
+try:
+    cur.execute("CREATE DATABASE IF NOT EXISTS flight_booking_system")
+    cur.execute("USE flight_booking_system")
+    cur.execute("""CREATE TABLE IF NOT EXISTS FLIGHTS(
+        F_NAME VARCHAR(30),
+        F_ID INTEGER PRIMARY KEY,
+        DEP_LOCN VARCHAR(30),
+        DEST_LOCN VARCHAR(30),
+        TVL_DATE DATE, DEP_TIME TIME,
+        ARVL_TIME TIME,
+        ECO_CAP INTEGER,
+        BNSS_CAP INTEGER,
+        FCLASS_CAP INTEGER,
+        ECO_PRICE INTEGER,
+        BNSS_PRICE INTEGER,
+        FCLASS_PRICE INTEGER)""")
+    
+    # Entering Values
+    cur.execute("INSERT IGNORE INTO FLIGHTS VALUES('ACS001',101,'Delhi','Mumbai','2024-12-20','05:30','08:00',70,30,null,8000,20000,null)")
+    cur.execute("INSERT IGNORE INTO FLIGHTS VALUES('ACS002',102,'Delhi','Bengaluru','2023-12-30','09:00','12:00',70,30,null,10000,22000,null)")
+    cur.execute("INSERT IGNORE INTO FLIGHTS VALUES('ACS003',103,'Hyderabad','Delhi','2024-12-20','05:30','08:00',70,30,null,8000,20000,null)")
+except Error as e:
+    print("Error: ",e)
+
+# ---- Menu ----
 opt=314159265359
 while opt!=0:
     # Baic sturcture:
@@ -39,7 +48,7 @@ while opt!=0:
     0: Exit""")
     opt = int(input("Chooose an option: "))
     
-# Functions 
+# ---- Functions ----
 # Book a flight
 def bookflight():
     # ---- Location & Time ----
