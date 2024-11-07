@@ -43,7 +43,8 @@ try:
         C_NAME VARCHAR(30),
         C_ID INTEGER AUTO_INCREMENT PRIMARY KEY,
         C_AGE VARCHAR(30),
-        EMAIL VARCHAR(30))""")
+        EMAIL VARCHAR(30),
+        PH_NO VARCHAR(15))""")
     
     # Entering Values
     cur.execute("INSERT IGNORE INTO FLIGHTS VALUES('ACS001',101,'Delhi','Mumbai','2024-12-20','05:30','08:00',70,30,null,8000,20000,null,'Scheduled')")
@@ -127,14 +128,15 @@ def bookflight():
     c_name = input("Enter name: ")
     c_age = int(input("Enter age: "))
     email = input("Enter Email: ")
+    ph_no = input("Enter Phone Number: ")
 
     # Check if customer already exists
-    cur.execute(f"SELECT * FROM CUSTOMERS WHERE EMAIL = '{email}'")
+    cur.execute(f"SELECT * FROM CUSTOMERS WHERE PH_NO = '{ph_no}' AND C_NAME = '{c_name}'")
     customer = cur.fetchone()
 
     if not customer:
         # Insert customer details (C_ID will auto-increment)
-        cur.execute(f"INSERT INTO CUSTOMERS (C_NAME, C_AGE, EMAIL) VALUES ('{c_name}', {c_age}, '{email}')")
+        cur.execute(f"INSERT INTO CUSTOMERS (C_NAME, C_AGE, EMAIL, PH_NO) VALUES ('{c_name}', {c_age}, '{email}', '{ph_no}')")  # Added PH_NO field
         mycon.commit()
         print("Customer details saved.")
         
@@ -173,5 +175,4 @@ def bookflight():
 
 # Calling the function
 bookflight()
-
 ## Change names of plane to model number so that default seats capacity can be restored.
