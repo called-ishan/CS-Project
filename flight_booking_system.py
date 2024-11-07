@@ -60,7 +60,7 @@ except Error as e:
 
 # ---- Functions ----
 # Book a flight
-def bookflight():
+def book_flight():
     # ---- Location & Time ----
     print("Available Departure Locations: ")
     cur.execute("SELECT DISTINCT DEP_LOCN FROM FLIGHTS")
@@ -188,7 +188,7 @@ while opt != 0:
     opt = int(input("Choose an option: "))
     print("--------------------------")
     if opt == 1:
-        bookflight()  # Call the function to book a flight
+        book_flight()  # Call the function to book a flight
     elif opt == 2:
         update_booking()  # Call the function to update booking
     elif opt == 3:
