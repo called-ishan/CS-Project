@@ -1,3 +1,21 @@
+# Modules
+import mysql.connector
+from mysql.connector import Error
+
+# Connecting to database
+try:
+    mycon = mysql.connector.connect(host="localhost",user="root",passwd="root")
+    if mycon.is_connected():
+        print("Connection with MySQL is Successfull")
+        cur=mycon.cursor()
+        cur.execute("CREATE DATABASE IF NOT EXISTS flight_booking_system")
+        cur.execute("USE DATABAST flight_booking_system")
+        cur.execute("CREATE TABLE FLIGHTS()")
+except Error as e:
+    print("Error while connecting to MySQL, Error: ", e)  
+# else:
+    # print("Connection with MySQL Failed")
+
 opt=314
 while opt!=0:
     # Baic sturcture:
@@ -32,5 +50,3 @@ def bookflight():
     contact = input("Enter Contact Number: ")
     email = input("Enter Email: ")
     age = int(input("Enter age: "))
-    
-bookflight()
