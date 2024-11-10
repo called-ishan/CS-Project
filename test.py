@@ -1,9 +1,9 @@
-# Modules
+# ---- Modules ----
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime
 
-# Connecting to database
+# ---- Connecting to database ----
 try:
     mycon = mysql.connector.connect(host="localhost", user="root", passwd="root")
     if mycon.is_connected():
@@ -63,9 +63,14 @@ except Error as e:
 
 # ---- Functions ----
 
+# ---- Book a flight ----
+
 def choose_flight_type():
     while True:
-        f_type = input("Enter flight type (1 for Domestic, 2 for International): ")
+        f_type = input("""Enter flight type:
+1: Domestic
+2: International 
+Your Choice: """)
         if f_type == "1":
             return "Domestic"
         elif f_type == "2":
@@ -73,7 +78,6 @@ def choose_flight_type():
         else:
             print("Invalid selection. Please enter 1 or 2.")
 
-# Book a flight
 def book_flight():
     # Choose flight type before displaying locations
     f_type = choose_flight_type()
@@ -100,7 +104,7 @@ def book_flight():
     cur.execute("SELECT DISTINCT DEST_LOCN FROM FLIGHTS WHERE DEP_LOCN = %s AND F_TYPE = %s", (dep, f_type))
     dest_locations = [location[0] for location in cur.fetchall()]
     for i in range(len(dest_locations)):
-        print(f"{i + 1}. {dest_locations[i]}")
+        print(f"{i + 1}: {dest_locations[i]}")
     while True:
         try:
             dest_choice = int(input("Enter the number for the Destination Location: ")) - 1
@@ -117,7 +121,7 @@ def book_flight():
     cur.execute("SELECT TVL_DATE, DEP_TIME FROM FLIGHTS WHERE DEP_LOCN = %s AND DEST_LOCN = %s AND F_TYPE = %s", (dep, dest, f_type))
     travel_dates = cur.fetchall()
     for i in range(len(travel_dates)):
-        print(f"{i + 1}. Date: {travel_dates[i][0]}, Departure Time: {travel_dates[i][1]}")
+        print(f"{i + 1}: Date: {travel_dates[i][0]}, Departure Time: {travel_dates[i][1]}")
     while True:
         try:
             date_choice = int(input("Enter the number for the Date of Travel: ")) - 1
@@ -132,9 +136,9 @@ def book_flight():
     # Seat class selection with validation
     while True:
         print("Select Seat Class:")
-        print("1. First Class")
-        print("2. Business")
-        print("3. Economy")
+        print("1: First Class")
+        print("2: Business")
+        print("3: Economy")
         seat_class_option = input("Enter the number corresponding to your choice: ")
         
         seat_class_map = {"1": "First Class", "2": "Business", "3": "Economy"}
@@ -151,7 +155,7 @@ def book_flight():
             return
         flight_id = selected_flight[1]
 
-        # ---- Seat Availability Check ----
+        # Seat Availability Check
         seat_index = {"First Class": 10, "Business": 9, "Economy": 8}
         class_price_index = {"First Class": 13, "Business": 12, "Economy": 11}
 
@@ -159,7 +163,7 @@ def book_flight():
         seat_price = selected_flight[class_price_index[seat_class]]
 
         if available_seats is None or available_seats <= 0:
-            print(f"No seats available in {seat_class} class.")
+            print(f"No seats available in {seat_class}.")
             continue
 
         # Get number of seats to book with validation
@@ -175,9 +179,9 @@ def book_flight():
         
         # Calculate new seat count
         new_seat_count = available_seats - seats_to_book
-        break  # Exit loop when valid selection and seats are available
+        break
 
-    # ---- Personal Details ----
+    # Personal Details
     print("\nEnter Customer Details:")
     c_name = input("Enter name: ")
     c_age = int(input("Enter age: "))
@@ -199,7 +203,7 @@ def book_flight():
     else:
         customer_id = customer[1]  # Use the existing customer ID
 
-    # ---- Booking ----
+    # Booking
     # Booking ID and Date
     booking_id = f"BK{datetime.now().strftime('%Y%m%d%H%M%S')}"
     booking_date = datetime.now().date()
@@ -215,15 +219,14 @@ def book_flight():
     seat_column = {"First Class": "FCLASS_CAP", "Business": "BNSS_CAP", "Economy": "ECO_CAP"}[seat_class]
     cur.execute(f"UPDATE FLIGHTS SET {seat_column} = %s WHERE F_ID = %s", (new_seat_count, flight_id))
 
-    # Commit changes
     mycon.commit()
 
     print("\nBooking Confirmed!")
     print(f"Booking ID: {booking_id}")
-    print(f"Total Price: {total_price}")
+    print(f"Total Price: {total_price} INR")
 
+# Update Booking
 
-## NOTE FOR ME: Change names of plane to model number so that default seats capacity can be restored.
 def update_seat_count_in_flights(flight_id, seat_class, seat_diff):
     # Adjusts the seat count for a specific flight and seat class in FLIGHTS
     seat_column = {"First Class": "FCLASS_CAP", "Business": "BNSS_CAP", "Economy": "ECO_CAP"}.get(seat_class)
@@ -258,10 +261,10 @@ def update_booking():
     if choice == 1:
         # Update seat class
         print("Select new seat class:")
-        print("1. First Class")
-        print("2. Business")
-        print("3. Economy")
-        new_class_choice = int(input("Enter your choice (1, 2, or 3): "))
+        print("1: First Class")
+        print("2: Business")
+        print("3: Economy")
+        new_class_choice = int(input("Enter Your Choice: "))
         
         if new_class_choice == 1:
             new_class = "First Class"
@@ -318,6 +321,7 @@ def view_booking():
     booking = cur.fetchone()
 
     if booking:
+        print("--------------------")
         print("Booking Details:")
         print(f"Booking ID: {booking[0]}")
         print(f"Customer ID: {booking[1]}")
@@ -327,8 +331,11 @@ def view_booking():
         print(f"Booking Date: {booking[5]}")
         print(f"Total Price: {booking[6]}")
         print(f"Status: {booking[7]}")
+        print("--------------------")
     else:
+        print("--------------------")
         print("Booking not found.")
+        print("--------------------")
 
 def cancel_booking():
     booking_id = input("Enter Booking ID to cancel: ")
@@ -372,7 +379,7 @@ def view_available_flights():
     cur.execute("SELECT DISTINCT DEP_LOCN FROM FLIGHTS WHERE STATUS = 'Scheduled' AND F_TYPE = %s", (flight_type,))
     dep_locations = [location[0] for location in cur.fetchall()]
     for i in range(len(dep_locations)):
-        print(f"{i + 1}. {dep_locations[i]}")
+        print(f"{i + 1}: {dep_locations[i]}")
     
     while True:
         try:
@@ -390,7 +397,7 @@ def view_available_flights():
     cur.execute("SELECT DISTINCT DEST_LOCN FROM FLIGHTS WHERE DEP_LOCN = %s AND STATUS = 'Scheduled' AND F_TYPE = %s", (dep, flight_type))
     dest_locations = [location[0] for location in cur.fetchall()]
     for i in range(len(dest_locations)):
-        print(f"{i + 1}. {dest_locations[i]}")
+        print(f"{i + 1}: {dest_locations[i]}")
     
     while True:
         try:
@@ -413,14 +420,11 @@ def view_available_flights():
     if flights:
         print("Available Flights:")
         for flight in flights:
-            print(f"Flight: {flight[0]}, From: {flight[1]}, To: {flight[2]}, Date: {flight[3]}, Departure: {flight[4]}, Arrival: {flight[5]}")
+            print("--------------------")
+            print(f"Flight: {flight[0]}, From {flight[1]} To {flight[2]}, Date: {flight[3]}, Departure: {flight[4]}, Arrival: {flight[5]}")
+            print("--------------------")
     else:
         print("No flights are currently available for the selected route.")
-
-
-
-
-
 
 # ---- Menu ----
 opt = 314159265359
@@ -430,8 +434,8 @@ while opt != 0:
     ---- Flight Booking System ----
     ===============================
     1: Book a Flight
-    2: Update Booking
-    3: View Booking
+    2: View Booking
+    3: Update Booking
     4: Cancel Booking
     5: View Available Flights
     0: Exit
@@ -442,9 +446,9 @@ while opt != 0:
     if opt == 1:
         book_flight()  # Call the function to book a flight
     elif opt == 2:
-        update_booking()  # Call the function to update booking
-    elif opt == 3:
         view_booking()  # Call the function to view booking
+    elif opt == 3:
+        update_booking()  # Call the function to update booking
     elif opt == 4:
         cancel_booking()  # Call the function to cancel booking
     elif opt == 5:

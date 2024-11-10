@@ -426,6 +426,7 @@ def view_available_flights():
     else:
         print("No flights are currently available for the selected route.")
 
+
 # ---- Menu ----
 opt = 314159265359
 while opt != 0:
