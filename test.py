@@ -137,7 +137,7 @@ def book_flight():
         print("3. Economy")
         seat_class_option = input("Enter the number corresponding to your choice: ")
         
-        seat_class_map = {"1": "First class", "2": "Business", "3": "Economy"}
+        seat_class_map = {"1": "First Class", "2": "Business", "3": "Economy"}
         if seat_class_option not in seat_class_map:
             print("Invalid selection. Please choose a valid option.")
             continue
@@ -152,8 +152,8 @@ def book_flight():
         flight_id = selected_flight[1]
 
         # ---- Seat Availability Check ----
-        seat_index = {"First class": 10, "Business": 9, "Economy": 8}
-        class_price_index = {"First class": 13, "Business": 12, "Economy": 11}
+        seat_index = {"First Class": 10, "Business": 9, "Economy": 8}
+        class_price_index = {"First Class": 13, "Business": 12, "Economy": 11}
 
         available_seats = selected_flight[seat_index[seat_class]]
         seat_price = selected_flight[class_price_index[seat_class]]
@@ -212,7 +212,7 @@ def book_flight():
                 (booking_id, customer_id, flight_id, seat_class, seats_to_book, booking_date, total_price))
     
     # Update available seats in FLIGHTS table
-    seat_column = {"First class": "FCLASS_CAP", "Business": "BNSS_CAP", "Economy": "ECO_CAP"}[seat_class]
+    seat_column = {"First Class": "FCLASS_CAP", "Business": "BNSS_CAP", "Economy": "ECO_CAP"}[seat_class]
     cur.execute(f"UPDATE FLIGHTS SET {seat_column} = %s WHERE F_ID = %s", (new_seat_count, flight_id))
 
     # Commit changes
@@ -224,7 +224,21 @@ def book_flight():
 
 
 ## NOTE FOR ME: Change names of plane to model number so that default seats capacity can be restored.
+def update_seat_count_in_flights(flight_id, seat_class, seat_diff):
+    # Adjusts the seat count for a specific flight and seat class in FLIGHTS
+    seat_column = {"First Class": "FCLASS_CAP", "Business": "BNSS_CAP", "Economy": "ECO_CAP"}.get(seat_class)
+    if seat_column:
+        cur.execute(f"UPDATE FLIGHTS SET {seat_column} = {seat_column} + %s WHERE F_ID = %s", (seat_diff, flight_id))
+        mycon.commit()
+
 def update_booking():
+    # Define a mapping for seat class to the corresponding column in the FLIGHTS table
+    seat_column_map = {
+        "First Class": "FCLASS_CAP",
+        "Business": "BNSS_CAP",
+        "Economy": "ECO_CAP"
+    }
+
     booking_id = input("Enter Booking ID to update: ")
     cur.execute("SELECT * FROM BOOKINGS WHERE B_ID = %s", (booking_id,))
     booking = cur.fetchone()
@@ -233,22 +247,70 @@ def update_booking():
         print("Booking not found.")
         return
 
+    flight_id = booking[2]  # Get the flight ID from the booking record
+    old_class = booking[3]  # Original seat class in the booking
+    seats_booked = booking[4]  # Original number of seats booked
+
     print("1. Update Seat Class")
     print("2. Update Number of Seats")
     choice = int(input("Choose an option to update: "))
 
     if choice == 1:
-        new_class = input("Enter new seat class (First Class, Business, Economy): ").title()
-        cur.execute("UPDATE BOOKINGS SET SEAT_CLASS = %s WHERE B_ID = %s", (new_class, booking_id))
+        # Update seat class
+        print("Select new seat class:")
+        print("1. First Class")
+        print("2. Business")
+        print("3. Economy")
+        new_class_choice = int(input("Enter your choice (1, 2, or 3): "))
+        
+        if new_class_choice == 1:
+            new_class = "First Class"
+        elif new_class_choice == 2:
+            new_class = "Business"
+        elif new_class_choice == 3:
+            new_class = "Economy"
+        else:
+            print("Invalid choice.")
+            return
+
+        if new_class != old_class:
+            # Check available seats in the new class
+            cur.execute(f"SELECT {seat_column_map[new_class]} FROM FLIGHTS WHERE F_ID = %s", (flight_id,))
+            available_seats = cur.fetchone()[0]
+
+            if available_seats >= seats_booked:
+                # Update the seat counts: add seats back to the old class and subtract from new class
+                cur.execute(f"UPDATE FLIGHTS SET {seat_column_map[old_class]} = {seat_column_map[old_class]} + %s WHERE F_ID = %s", (seats_booked, flight_id))
+                cur.execute(f"UPDATE FLIGHTS SET {seat_column_map[new_class]} = {seat_column_map[new_class]} - %s WHERE F_ID = %s", (seats_booked, flight_id))
+                cur.execute("UPDATE BOOKINGS SET SEAT_CLASS = %s WHERE B_ID = %s", (new_class, booking_id))
+                mycon.commit()
+                print("Seat class updated successfully.")
+            else:
+                print("Not enough seats available in the selected class.")
+        else:
+            print("You are already booked in this class.")
+            
     elif choice == 2:
+        # Update number of seats
         new_seats = int(input("Enter new number of seats: "))
-        cur.execute("UPDATE BOOKINGS SET SEATS_BOOKED = %s WHERE B_ID = %s", (new_seats, booking_id))
+        seat_diff = new_seats - seats_booked
+
+        # Check if enough seats are available for the update
+        cur.execute(f"SELECT {seat_column_map[old_class]} FROM FLIGHTS WHERE F_ID = %s", (flight_id,))
+        available_seats = cur.fetchone()[0]
+
+        if available_seats + min(0, seat_diff) >= abs(seat_diff):
+            # Update the seats in FLIGHTS table based on the difference
+            cur.execute(f"UPDATE FLIGHTS SET {seat_column_map[old_class]} = {seat_column_map[old_class]} - %s WHERE F_ID = %s", (seat_diff, flight_id))
+            cur.execute("UPDATE BOOKINGS SET SEATS_BOOKED = %s WHERE B_ID = %s", (new_seats, booking_id))
+            mycon.commit()
+            print("Number of seats updated successfully.")
+        else:
+            print("Not enough seats available to make this change.")
     else:
         print("Invalid choice.")
-        return
 
-    mycon.commit()
-    print("Booking updated successfully.")
+
 
 def view_booking():
     booking_id = input("Enter Booking ID to view: ")
@@ -287,7 +349,7 @@ def cancel_booking():
     
     # Determine the correct column in FLIGHTS based on seat class
     seat_column = ""
-    if seat_class == "First class":
+    if seat_class == "First Class":
         seat_column = "FCLASS_CAP"
     elif seat_class == "Business":
         seat_column = "BNSS_CAP"
